@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { QueueRepository } from './repositories/queue.repository';
 import { RabbitMqRepository } from './implementations/rabbitmq.repository';
 import { QueueService } from './queue.service';
@@ -11,7 +11,7 @@ interface QueuesNamesAndConsumers {
 }
 
 @Module({
-  imports: [RabbitMqRepository, UserModule],
+  imports: [RabbitMqRepository, forwardRef(() => UserModule)],
   providers: [
     UserService,
     {
