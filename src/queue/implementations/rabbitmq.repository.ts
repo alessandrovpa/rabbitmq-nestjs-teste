@@ -1,9 +1,6 @@
 import { Connection, Channel, connect, Message } from 'amqplib';
 import { QueueRepository } from '../repositories/queue.repository';
-
-interface QueuesCallbacksType {
-  [queue: string]: (message: any) => boolean;
-}
+import { QueuesNamesAndConsumers } from '../queue.module';
 
 class RabbitMqRepository implements QueueRepository {
   private con: Connection;
@@ -11,7 +8,7 @@ class RabbitMqRepository implements QueueRepository {
 
   constructor(
     private uri: string,
-    private queuesCallbacks: QueuesCallbacksType,
+    private queuesAndConsumers: QueuesNamesAndConsumers,
   ) {
     this.start(uri);
   }
@@ -20,15 +17,15 @@ class RabbitMqRepository implements QueueRepository {
     this.con = await connect(uri);
     this.channel = await this.con.createChannel();
 
-    if (this.queuesCallbacks) {
-      const queues = Object.keys(this.queuesCallbacks);
+    if (this.queuesAndConsumers) {
+      const queues = Object.keys(this.queuesAndConsumers);
 
-      queues.forEach(async (queue) => {
-        const callback = this.queuesCallbacks[queue];
-        if (typeof callback === 'function') {
-          await this.consumeMessage(queue, (message) => {
+      queues.forEach((queue) => {
+        const consume = this.queuesAndConsumers[queue];
+        if (typeof consume === 'function') {
+          this.consumeMessage(queue, (message) => {
             const messageInJSON = JSON.parse(message.content.toString());
-            return callback(messageInJSON);
+            return consume(messageInJSON);
           });
         }
       });

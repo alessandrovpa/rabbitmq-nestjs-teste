@@ -6,7 +6,7 @@ import { UserModule } from 'src/user/user.module';
 import { UserService } from 'src/user/user.service';
 const rabbitMqConnectionURI = 'amqp://guest:guest@localhost:5672';
 
-interface QueuesNamesAndConsumers {
+export interface QueuesNamesAndConsumers {
   [queueName: string]: (message: any) => boolean;
 }
 
@@ -17,9 +17,8 @@ interface QueuesNamesAndConsumers {
     {
       provide: QueueRepository,
       useFactory: (userService: UserService) => {
-        console.log('aqui', userService);
         const queuesAndConsumers: QueuesNamesAndConsumers = {
-          user: (message) => userService.create(message),
+          user: (message) => userService.createUserConsumer(message),
         };
 
         return new RabbitMqRepository(
