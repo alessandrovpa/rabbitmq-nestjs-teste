@@ -33,7 +33,7 @@ class RabbitMqRepository implements QueueRepository {
   }
 
   async sendMessage(queue: string, content: string): Promise<boolean> {
-    return await this.channel.sendToQueue(queue, Buffer.from(content));
+    return this.channel.publish('amq.direct', queue, Buffer.from(content));
   }
 
   consumeMessage(
